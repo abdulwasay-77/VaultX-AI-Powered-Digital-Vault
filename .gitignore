@@ -1,0 +1,117 @@
+########################################
+# VaultX - Root .gitignore
+########################################
+
+# ======================================
+# Secrets / Environment
+# ======================================
+.env
+.env.*
+!.env.example
+
+vaultx_backend/.env
+vaultx_backend/.env.*
+!vaultx_backend/.env.example
+
+# ======================================
+# Python
+# ======================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+/build/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/.eggs/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/wheels/
+
+*.egg-info/
+.installed.cfg
+*.egg
+
+venv/
+.venv/
+env/
+ENV/
+vaultx_backend/venv/
+vaultx_backend/.venv/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ======================================
+# Runtime Data
+# ======================================
+vaultx_backend/uploads/*
+!vaultx_backend/uploads/.gitkeep
+
+vaultx_backend/backups/*
+!vaultx_backend/backups/.gitkeep
+
+*.encrypted
+*.vaultx
+
+# ======================================
+# Flutter / Dart
+# ======================================
+vaultx_frontend/.dart_tool/
+vaultx_frontend/.flutter-plugins
+vaultx_frontend/.flutter-plugins-dependencies
+vaultx_frontend/.packages
+vaultx_frontend/build/
+vaultx_frontend/.pub-cache/
+vaultx_frontend/.pub/
+vaultx_frontend/*.iml
+
+vaultx_frontend/android/.gradle/
+vaultx_frontend/android/app/build/
+
+vaultx_frontend/ios/Pods/
+vaultx_frontend/ios/Flutter/Flutter.podspec
+
+vaultx_frontend/windows/flutter/ephemeral/
+vaultx_frontend/linux/flutter/ephemeral/
+vaultx_frontend/macos/Flutter/ephemeral/
+
+# Generated Flutter files
+vaultx_frontend/windows/flutter/generated_plugin_registrant.cc
+vaultx_frontend/windows/flutter/generated_plugin_registrant.h
+vaultx_frontend/windows/flutter/generated_plugins.cmake
+
+# ======================================
+# Editors
+# ======================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ======================================
+# OS
+# ======================================
+.DS_Store
+Thumbs.db
+
+# ======================================
+# Databases
+# ======================================
+*.db
+*.sqlite3
+
+# ======================================
+# Logs / Temp
+# ======================================
+*.log
+*.tmp
+*.temp
