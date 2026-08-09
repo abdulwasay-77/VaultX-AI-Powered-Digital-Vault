@@ -129,7 +129,7 @@ def smart_merge_passwords(user_id: int, backup_passwords: List[dict]) -> dict:
                     user_id, title, username_encrypted, password_encrypted, iv, 
                     url, tag, strength_score, created_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
             """
             params = (
                 user_id,
@@ -209,7 +209,7 @@ def smart_merge_documents(user_id: int, backup_documents: List[dict]) -> dict:
                     user_id, file_name, file_path_encrypted, file_size, file_type,
                     sensitivity_score, iv, category, uploaded_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
             """
             params = (
                 user_id,
@@ -278,7 +278,7 @@ def smart_merge_notes(user_id: int, backup_notes: List[dict]) -> dict:
                 INSERT INTO Notes (
                     user_id, title, content_encrypted, iv, folder, created_at
                 )
-                VALUES (?, ?, ?, ?, ?, GETDATE())
+                VALUES (?, ?, ?, ?, ?, datetime('now'))
             """
             params = (
                 user_id,
@@ -407,7 +407,7 @@ def export_backup(
     # Save to backup history
     history_query = """
         INSERT INTO Backups (user_id, backup_file_path, file_size, created_at)
-        VALUES (?, ?, ?, GETDATE())
+        VALUES (?, ?, ?, datetime('now'))
     """
     db_manager.execute_query(history_query, (user_id, backup_path, file_size))
     

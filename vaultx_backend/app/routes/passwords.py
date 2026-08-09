@@ -71,7 +71,7 @@ def create_password(
             user_id, title, username_encrypted, password_encrypted, 
             iv, url, tag, strength_score, risk_flag, created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, GETDATE())
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))
     """
     params = (
         user_id, request.title, encrypted_username, encrypted_password,

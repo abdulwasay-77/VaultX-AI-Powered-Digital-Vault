@@ -40,23 +40,23 @@ void main() {
   });
 }
 
-// ── Login: 800×600, no title bar ──
+// ── Login: compact portrait window, no title bar ──
 Future<void> shrinkToLoginWindow() async {
   await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
   await windowManager.setResizable(false);
-  await windowManager.setMinimumSize(const Size(800, 600));
-  await windowManager.setMaximumSize(const Size(800, 600));
-  await windowManager.setSize(const Size(800, 600));
+  await windowManager.setMinimumSize(const Size(600, 620));
+  await windowManager.setMaximumSize(const Size(600, 620));
+  await windowManager.setSize(const Size(600, 620));
   await windowManager.center();
 }
 
-// ── Register: same size as login (800×600) ──
+// ── Register: same compact portrait size as login ──
 Future<void> shrinkToRegisterWindow() async {
   await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
   await windowManager.setResizable(false);
-  await windowManager.setMinimumSize(const Size(800, 600));
-  await windowManager.setMaximumSize(const Size(800, 600));
-  await windowManager.setSize(const Size(800, 600));
+  await windowManager.setMinimumSize(const Size(600, 620));
+  await windowManager.setMaximumSize(const Size(600, 620));
+  await windowManager.setSize(const Size(600, 620));
   await windowManager.center();
 }
 
@@ -66,7 +66,8 @@ Future<void> expandToFullWindow() async {
   await windowManager.setResizable(true);
   await windowManager.setMinimumSize(const Size(900, 620));
   await windowManager.setMaximumSize(const Size(9999, 9999));
-  await windowManager.setSize(const Size(1200, 760));
+  // Keep the restored dashboard window comfortably inside common laptop screens.
+  await windowManager.setSize(const Size(1100, 700));
   await windowManager.center();
 }
 

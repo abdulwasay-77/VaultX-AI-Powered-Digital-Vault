@@ -49,7 +49,9 @@ class _ParticleData {
 // DOCUMENT SCREEN
 // ═══════════════════════════════════════════════════════════════
 class DocumentScreen extends StatefulWidget {
-  const DocumentScreen({super.key});
+  final int? highlightedDocumentId;
+
+  const DocumentScreen({super.key, this.highlightedDocumentId});
   @override
   State<DocumentScreen> createState() => _DocumentScreenState();
 }
@@ -156,12 +158,20 @@ class _DocumentScreenState extends State<DocumentScreen>
   }
 
   List<Document> get _filteredDocuments {
-    if (_selectedCategoryFilter == null || _selectedCategoryFilter == 'All') {
-      return _documents;
-    }
-    return _documents
-        .where((doc) => doc.category == _selectedCategoryFilter)
-        .toList();
+    final documents = _selectedCategoryFilter == null ||
+            _selectedCategoryFilter == 'All'
+        ? _documents
+        : _documents
+            .where((doc) => doc.category == _selectedCategoryFilter)
+            .toList();
+    final sorted = [...documents];
+    sorted.sort((a, b) {
+      final aHighlighted = a.id == widget.highlightedDocumentId;
+      final bHighlighted = b.id == widget.highlightedDocumentId;
+      if (aHighlighted == bHighlighted) return 0;
+      return aHighlighted ? -1 : 1;
+    });
+    return sorted;
   }
 
   // ── Upload ──────────────────────────────────────────────────
@@ -1237,6 +1247,7 @@ class _DocumentScreenState extends State<DocumentScreen>
           getSensitivityColor: _getSensitivityColor,
           getSensitivityLabel: _getSensitivityLabel,
           getSensitivityIcon: _getSensitivityIcon,
+          isHighlighted: doc.id == widget.highlightedDocumentId,
         );
       },
     );
@@ -1392,6 +1403,7 @@ class _DocumentCard extends StatefulWidget {
   final Color Function(String) getSensitivityColor;
   final String Function(String) getSensitivityLabel;
   final IconData Function(String) getSensitivityIcon;
+  final bool isHighlighted;
 
   const _DocumentCard({
     required this.document,
@@ -1401,6 +1413,7 @@ class _DocumentCard extends StatefulWidget {
     required this.getSensitivityColor,
     required this.getSensitivityLabel,
     required this.getSensitivityIcon,
+    this.isHighlighted = false,
   });
 
   @override
@@ -1464,22 +1477,27 @@ class _DocumentCardState extends State<_DocumentCard>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  _hovering ? const Color(0xFF112B4E) : const Color(0xFF0E2340),
+                  (_hovering || widget.isHighlighted)
+                      ? const Color(0xFF112B4E)
+                      : const Color(0xFF0E2340),
                   const Color(0xFF112B4E),
                   const Color(0xFF0C1E36),
                 ],
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: _hovering
-                    ? const Color(0xFF2E75B6).withOpacity(0.5)
+                color: (_hovering || widget.isHighlighted)
+                    ? const Color(0xFF58A6FF)
                     : const Color(0xFF1E4A7A).withOpacity(0.35),
+                width: widget.isHighlighted ? 2 : 1,
               ),
-              boxShadow: _hovering
+              boxShadow: (_hovering || widget.isHighlighted)
                   ? [
                       BoxShadow(
                         color: const Color(0xFF2E75B6)
-                            .withOpacity(0.28 * _glow.value),
+                            .withOpacity(widget.isHighlighted
+                                ? 0.45
+                                : 0.28 * _glow.value),
                         blurRadius: 20,
                         spreadRadius: 2,
                       ),

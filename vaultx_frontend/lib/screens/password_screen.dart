@@ -12,11 +12,13 @@ import '_vault_shared.dart';
 class PasswordScreen extends StatefulWidget {
   final List<PasswordEntry> passwords;
   final Future<void> Function() onRefresh;
+  final int? highlightedPasswordId;
 
   const PasswordScreen({
     super.key,
     required this.passwords,
     required this.onRefresh,
+    this.highlightedPasswordId,
   });
 
   @override
@@ -365,15 +367,23 @@ class _PasswordScreenState extends State<PasswordScreen>
   }
 
   Widget _buildPasswordList() {
+    final passwords = [...widget.passwords]
+      ..sort((a, b) {
+        final aHighlighted = a.id == widget.highlightedPasswordId;
+        final bHighlighted = b.id == widget.highlightedPasswordId;
+        if (aHighlighted == bHighlighted) return 0;
+        return aHighlighted ? -1 : 1;
+      });
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-      itemCount: widget.passwords.length,
+      itemCount: passwords.length,
       itemBuilder: (context, index) {
-        final pwd = widget.passwords[index];
+        final pwd = passwords[index];
         return _PasswordCard(
           password: pwd,
           onTap: () => _showViewDetailsDialog(pwd),
           getStrengthColor: _getStrengthColor,
+          isHighlighted: pwd.id == widget.highlightedPasswordId,
         );
       },
     );
@@ -426,11 +436,13 @@ class _PasswordCard extends StatefulWidget {
   final PasswordEntry password;
   final VoidCallback onTap;
   final Color Function(int) getStrengthColor;
+  final bool isHighlighted;
 
   const _PasswordCard({
     required this.password,
     required this.onTap,
     required this.getStrengthColor,
+    this.isHighlighted = false,
   });
 
   @override
@@ -503,16 +515,18 @@ class _PasswordCardState extends State<_PasswordCard>
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: _hovering
-                      ? const Color(0xFF2E75B6).withOpacity(0.5)
+                  color: (_hovering || widget.isHighlighted)
+                      ? const Color(0xFF58A6FF)
                       : const Color(0xFF1E4A7A).withOpacity(0.4),
-                  width: 1.2,
+                  width: widget.isHighlighted ? 2 : 1.2,
                 ),
-                boxShadow: _hovering
+                boxShadow: (_hovering || widget.isHighlighted)
                     ? [
                         BoxShadow(
                           color: const Color(0xFF2E75B6)
-                              .withOpacity(0.25 * _glow.value),
+                              .withOpacity(widget.isHighlighted
+                                  ? 0.45
+                                  : 0.25 * _glow.value),
                           blurRadius: 20,
                           spreadRadius: 2,
                         ),

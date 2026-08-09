@@ -51,6 +51,20 @@ vaultx_backend/.venv/
 htmlcov/
 
 # ======================================
+# PyInstaller build output (compiled backend)
+# ======================================
+# NOTE: the root-level /build/ and /dist/ rules above only match a build/dist
+# folder sitting directly in the repo root — they do NOT catch these nested
+# ones, which is where the actual compiled .exe, DLLs, and generated SQLite
+# database now live. These must NOT be committed (large, generated, and the
+# .db file may contain real test data from your machine).
+vaultx_backend/build/
+vaultx_backend/dist/
+
+# The database + uploads/backups PyInstaller creates next to the exe when run
+vaultx_backend/data/
+
+# ======================================
 # Runtime Data
 # ======================================
 vaultx_backend/uploads/*
@@ -115,3 +129,12 @@ Thumbs.db
 *.log
 *.tmp
 *.temp
+
+# ======================================
+# Installer output (Inno Setup)
+# ======================================
+# The final VaultX-Setup.exe and any Inno Setup work files — this is a
+# generated *product* of the source, not source itself, and is large.
+# Anyone with the repo can rebuild it using vaultx_installer.iss.
+installer_output/
+*.exe

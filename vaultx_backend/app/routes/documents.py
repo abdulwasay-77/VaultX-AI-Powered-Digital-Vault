@@ -114,7 +114,7 @@ async def upload_document(
             user_id, file_name, file_path_encrypted, file_size, file_type,
             sensitivity_score, iv, category, uploaded_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     """
     params = (
         user_id, file.filename, relative_path.encode('utf-8'), file_size,

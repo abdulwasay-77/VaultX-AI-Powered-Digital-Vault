@@ -51,7 +51,7 @@ def create_folder(
     # Insert new folder
     insert_query = """
         INSERT INTO Folders (user_id, name, created_at)
-        VALUES (?, ?, GETDATE())
+        VALUES (?, ?, datetime('now'))
     """
     
     try:
@@ -149,7 +149,7 @@ def delete_folder(
     # Move notes from the deleted folder
     update_query = """
         UPDATE Notes 
-        SET folder = ?, updated_at = GETDATE()
+        SET folder = ?, updated_at = datetime('now')
         WHERE user_id = ? AND folder = ?
     """
     db_manager.execute_query(update_query, (target_folder, user_id, folder_name))
@@ -188,7 +188,7 @@ def create_note(
             # Auto-create the folder
             insert_folder_query = """
                 INSERT INTO Folders (user_id, name, created_at)
-                VALUES (?, ?, GETDATE())
+                VALUES (?, ?, datetime('now'))
             """
             try:
                 db_manager.execute_query(insert_folder_query, (user_id, folder))
@@ -208,7 +208,7 @@ def create_note(
     # Insert into database
     query = """
         INSERT INTO Notes (user_id, title, content_encrypted, iv, folder, updated_at, created_at)
-        VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE())
+        VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
     """
     params = (user_id, request.title, encrypted_content, iv, folder)
     
@@ -350,7 +350,7 @@ def update_note(
             # Create the folder
             insert_folder_query = """
                 INSERT INTO Folders (user_id, name, created_at)
-                VALUES (?, ?, GETDATE())
+                VALUES (?, ?, datetime('now'))
             """
             try:
                 db_manager.execute_query(insert_folder_query, (user_id, new_folder))
@@ -365,14 +365,14 @@ def update_note(
         
         update_query = """
             UPDATE Notes 
-            SET title = ?, content_encrypted = ?, iv = ?, folder = ?, updated_at = GETDATE()
+            SET title = ?, content_encrypted = ?, iv = ?, folder = ?, updated_at = datetime('now')
             WHERE id = ? AND user_id = ?
         """
         params = (new_title, new_encrypted, new_iv, new_folder, note_id, user_id)
     else:
         update_query = """
             UPDATE Notes 
-            SET title = ?, folder = ?, updated_at = GETDATE()
+            SET title = ?, folder = ?, updated_at = datetime('now')
             WHERE id = ? AND user_id = ?
         """
         params = (new_title, new_folder, note_id, user_id)
@@ -428,7 +428,7 @@ def move_note_to_folder(
             # Create the folder
             insert_folder_query = """
                 INSERT INTO Folders (user_id, name, created_at)
-                VALUES (?, ?, GETDATE())
+                VALUES (?, ?, datetime('now'))
             """
             try:
                 db_manager.execute_query(insert_folder_query, (user_id, folder))
@@ -437,7 +437,7 @@ def move_note_to_folder(
     
     update_query = """
         UPDATE Notes 
-        SET folder = ?, updated_at = GETDATE()
+        SET folder = ?, updated_at = datetime('now')
         WHERE id = ? AND user_id = ?
     """
     db_manager.execute_query(update_query, (folder, note_id, user_id))

@@ -12,7 +12,9 @@ import '../models/models.dart';
 // ═══════════════════════════════════════════════════════════════════════════
 
 class NotesScreen extends StatefulWidget {
-  const NotesScreen({super.key});
+  final int? initialNoteId;
+
+  const NotesScreen({super.key, this.initialNoteId});
 
   @override
   State<NotesScreen> createState() => _NotesScreenState();
@@ -139,7 +141,19 @@ class _NotesScreenState extends State<NotesScreen>
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     await Future.wait([_loadNotes(), _loadFolders()]);
+    if (widget.initialNoteId != null) {
+      await _loadNote(widget.initialNoteId!);
+    }
     setState(() => _isLoading = false);
+  }
+
+  @override
+  void didUpdateWidget(covariant NotesScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialNoteId != null &&
+        widget.initialNoteId != oldWidget.initialNoteId) {
+      _loadNote(widget.initialNoteId!);
+    }
   }
 
   Future<void> _loadNotes() async {

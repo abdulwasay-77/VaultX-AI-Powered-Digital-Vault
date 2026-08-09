@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
@@ -109,26 +108,25 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: AnimatedBuilder(
-        animation: _bgCtrl,
-        builder: (_, child) => Stack(
-          children: [
-            // Solid deep dark base
-            const VaultBackground(),
-            // Floating vault-themed objects (locks, keys, shields, vault doors)
-            CustomPaint(
+      body: Stack(
+        children: [
+          // Whole-window gradient background (matches the card — no separate dark void)
+          const VaultBackground(),
+          // Floating vault-themed objects drifting across the window
+          AnimatedBuilder(
+            animation: _bgCtrl,
+            builder: (_, __) => CustomPaint(
               painter: VaultScenePainter(_bgCtrl.value),
               size: Size.infinite,
             ),
-            child!,
-          ],
-        ),
-        child: FadeTransition(
-          opacity: _cardFade,
-          child: SlideTransition(
+          ),
+          FadeTransition(
+            opacity: _cardFade,
+            child: SlideTransition(
             position: _cardSlide,
             child: Center(
-              child: VaultCard(
+              child: SizedBox(
+                width: 440,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -269,7 +267,8 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-        ),
+          ),
+        ],
       ),
     );
   }

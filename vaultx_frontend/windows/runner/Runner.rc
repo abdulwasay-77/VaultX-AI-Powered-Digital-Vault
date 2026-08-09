@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "vaultx_frontend" "\0"
+            VALUE "CompanyName", "Abdul Wasay" "\0"
+            VALUE "FileDescription", "VaultX" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "vaultx_frontend" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Abdul Wasay. All rights reserved." "\0"
             VALUE "OriginalFilename", "vaultx_frontend.exe" "\0"
-            VALUE "ProductName", "vaultx_frontend" "\0"
+            VALUE "ProductName", "VaultX" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

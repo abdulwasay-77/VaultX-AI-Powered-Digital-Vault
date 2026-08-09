@@ -31,13 +31,14 @@ class SearchEngine:
         
         # 1. Search Passwords - match ANYWHERE in title or tag
         password_sql = """
-            SELECT TOP 30 id, title, tag, created_at, 'password' as type
+            SELECT id, title, tag, created_at, 'password' as type
             FROM Passwords 
             WHERE user_id = ? AND (LOWER(title) LIKE ? OR LOWER(tag) LIKE ?)
             ORDER BY 
                 CASE WHEN LOWER(title) = ? THEN 1
                      WHEN LOWER(title) LIKE ? THEN 2
                      ELSE 3 END
+            LIMIT 30
         """
         password_rows = db_manager.execute_query(
             password_sql, 
@@ -57,13 +58,14 @@ class SearchEngine:
         
         # 2. Search Documents - match ANYWHERE in file_name
         doc_sql = """
-            SELECT TOP 30 id, file_name, category, file_type, 'document' as type
+            SELECT id, file_name, category, file_type, 'document' as type
             FROM Documents 
             WHERE user_id = ? AND LOWER(file_name) LIKE ?
             ORDER BY 
                 CASE WHEN LOWER(file_name) = ? THEN 1
                      WHEN LOWER(file_name) LIKE ? THEN 2
                      ELSE 3 END
+            LIMIT 30
         """
         doc_rows = db_manager.execute_query(doc_sql, (user_id, search_pattern, q, f"{q}%"))
         
@@ -81,13 +83,14 @@ class SearchEngine:
         
         # 3. Search Notes - match ANYWHERE in title
         note_sql = """
-            SELECT TOP 30 id, title, folder, 'note' as type
+            SELECT id, title, folder, 'note' as type
             FROM Notes 
             WHERE user_id = ? AND LOWER(title) LIKE ?
             ORDER BY 
                 CASE WHEN LOWER(title) = ? THEN 1
                      WHEN LOWER(title) LIKE ? THEN 2
                      ELSE 3 END
+            LIMIT 30
         """
         note_rows = db_manager.execute_query(note_sql, (user_id, search_pattern, q, f"{q}%"))
         
@@ -148,7 +151,7 @@ class SearchEngine:
         
         # Get from passwords
         pwd_rows = db_manager.execute_query(
-            "SELECT DISTINCT TOP 10 title FROM Passwords WHERE user_id = ? AND LOWER(title) LIKE ?",
+            "SELECT DISTINCT title FROM Passwords WHERE user_id = ? AND LOWER(title) LIKE ? LIMIT 10",
             (user_id, pattern)
         )
         if pwd_rows:
@@ -158,7 +161,7 @@ class SearchEngine:
         
         # Get from documents
         doc_rows = db_manager.execute_query(
-            "SELECT DISTINCT TOP 10 file_name FROM Documents WHERE user_id = ? AND LOWER(file_name) LIKE ?",
+            "SELECT DISTINCT file_name FROM Documents WHERE user_id = ? AND LOWER(file_name) LIKE ? LIMIT 10",
             (user_id, pattern)
         )
         if doc_rows:
@@ -168,7 +171,7 @@ class SearchEngine:
         
         # Get from notes
         note_rows = db_manager.execute_query(
-            "SELECT DISTINCT TOP 10 title FROM Notes WHERE user_id = ? AND LOWER(title) LIKE ?",
+            "SELECT DISTINCT title FROM Notes WHERE user_id = ? AND LOWER(title) LIKE ? LIMIT 10",
             (user_id, pattern)
         )
         if note_rows:

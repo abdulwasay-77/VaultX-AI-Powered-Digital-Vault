@@ -77,7 +77,7 @@ def register(request: RegisterRequest):
     # Insert user
     insert_query = """
         INSERT INTO Users (master_password_hash, salt, pin_hash, username, email, created_at)
-        VALUES (?, ?, ?, ?, ?, GETDATE())
+        VALUES (?, ?, ?, ?, ?, datetime('now'))
     """
     params = (hash_val, salt_hex, pin_hash, request.username, request.email)
     

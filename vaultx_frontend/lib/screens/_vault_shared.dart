@@ -16,7 +16,18 @@ class VaultBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF040D18), // solid deep navy-black base
+        // Same gradient as VaultCard, so the whole window reads as one
+        // continuous surface — no separate darker "void" around the form.
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0E2340),
+            Color(0xFF112B4E),
+            Color(0xFF0C1E36),
+          ],
+          stops: [0.0, 0.55, 1.0],
+        ),
       ),
     );
   }

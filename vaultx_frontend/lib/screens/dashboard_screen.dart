@@ -34,6 +34,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   List<PasswordEntry> _passwords = [];
   List<Document> _documents = [];
   List<NoteListItem> _notes = [];
+  int? _highlightedPasswordId;
 
   String _username = '';
   bool _isFullScreen = false;
@@ -143,7 +144,11 @@ class _DashboardScreenState extends State<DashboardScreen>
           _passwords = passwords;
           // Rebuild the password sub-screen so it also sees the fresh list
           _passwordScreen =
-              PasswordScreen(passwords: _passwords, onRefresh: _loadPasswords);
+              PasswordScreen(
+                passwords: _passwords,
+                onRefresh: _loadPasswords,
+                highlightedPasswordId: _highlightedPasswordId,
+              );
         });
       }
     } catch (_) {}
@@ -226,6 +231,22 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
     setState(() {
       _selectedIndex = targetIndex;
+      switch (result.type) {
+        case 'password':
+          _highlightedPasswordId = result.id;
+          _passwordScreen = PasswordScreen(
+            passwords: _passwords,
+            onRefresh: _loadPasswords,
+            highlightedPasswordId: result.id,
+          );
+          break;
+        case 'document':
+          _documentScreen = DocumentScreen(highlightedDocumentId: result.id);
+          break;
+        case 'note':
+          _notesScreen = NotesScreen(initialNoteId: result.id);
+          break;
+      }
       _searchController.clear();
       _searchResponse = null;
     });
@@ -243,8 +264,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   void _logout() async {
     if (_isFullScreen) {
       await windowManager.setFullScreen(false);
-      await expandToFullWindow();
     }
+    // Return to the compact authentication window before showing LoginScreen.
+    await shrinkToLoginWindow();
     if (!mounted) return;
     Provider.of<AuthProvider>(context, listen: false).logout();
     Navigator.of(context).pushAndRemoveUntil(
