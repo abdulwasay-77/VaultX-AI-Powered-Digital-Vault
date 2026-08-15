@@ -210,6 +210,13 @@ class SidebarMenu extends StatelessWidget {
             isSelected: selectedIndex == 5,
             onTap: () => onItemSelected(5),
           ),
+          _SidebarItem(
+            icon: Icons.person_rounded,
+            label: 'Profile',
+            index: 6,
+            isSelected: selectedIndex == 6,
+            onTap: () => onItemSelected(6),
+          ),
 
           const SizedBox(height: 10),
 
@@ -494,6 +501,10 @@ class _CollapsedSidebar extends StatelessWidget {
               icon: Icons.backup_rounded,
               isSelected: selectedIndex == 5,
               onTap: () => onItemSelected(5)),
+          _CollapsedIcon(
+              icon: Icons.person_rounded,
+              isSelected: selectedIndex == 6,
+              onTap: () => onItemSelected(6)),
           const Spacer(),
           _CollapsedIcon(
               icon: Icons.logout_rounded,

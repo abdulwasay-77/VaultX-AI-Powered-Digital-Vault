@@ -171,7 +171,9 @@ class _RegisterScreenState extends State<RegisterScreen>
         await expandToFullWindow();
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+            MaterialPageRoute(
+              builder: (_) => const DashboardScreen(isFirstTime: true),
+            ),
             (route) => false,
           );
         }
@@ -212,211 +214,211 @@ class _RegisterScreenState extends State<RegisterScreen>
           FadeTransition(
             opacity: _cardFade,
             child: SlideTransition(
-            position: _cardSlide,
-            child: Center(
-              child: ScrollConfiguration(
-                behavior: ScrollConfiguration.of(context).copyWith(
-                  scrollbars: false,
-                ),
-                child: SingleChildScrollView(
-                  child: SizedBox(
-                  width: 440,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // ── Icon ──
-                      Center(
-                        child: AnimatedBuilder(
-                          animation: _iconCtrl,
-                          builder: (_, __) => VaultIconBadge(
-                            icon: Icons.person_add_alt_1_rounded,
-                            glowValue: _iconGlow.value,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      VaultTitle(
-                        title: 'Create Vault',
-                        subtitle: 'Set up your encrypted vault',
-                      ),
-                      const SizedBox(height: 14),
-                      // ── Username ──
-                      VaultTextField(
-                        controller: _usernameController,
-                        label: 'Username',
-                        hint: 'Choose a unique username',
-                        prefixIcon: Icons.person_outline_rounded,
-                      ),
-                      const SizedBox(height: 8),
-                      // ── Email ──
-                      VaultTextField(
-                        controller: _emailController,
-                        label: 'Email',
-                        hint: 'your@email.com',
-                        prefixIcon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 8),
-                      // ── Password row with generate / copy ──
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+              position: _cardSlide,
+              child: Center(
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context).copyWith(
+                    scrollbars: false,
+                  ),
+                  child: SingleChildScrollView(
+                    child: SizedBox(
+                      width: 440,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(
-                            child: VaultTextField(
-                              controller: _passwordController,
-                              label: 'Master Password',
-                              hint: 'Minimum 8 characters',
-                              prefixIcon: Icons.lock_outline_rounded,
-                              obscure: _obscurePassword,
-                              onToggleObscure: () => setState(
-                                  () => _obscurePassword = !_obscurePassword),
-                              onChanged: _onPasswordChanged,
+                          // ── Icon ──
+                          Center(
+                            child: AnimatedBuilder(
+                              animation: _iconCtrl,
+                              builder: (_, __) => VaultIconBadge(
+                                icon: Icons.person_add_alt_1_rounded,
+                                glowValue: _iconGlow.value,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          _IconActionButton(
-                            icon: _isGenerating
-                                ? null
-                                : Icons.auto_awesome_rounded,
-                            isLoading: _isGenerating,
-                            tooltip: 'Generate strong password',
-                            color: const Color(0xFF2E75B6),
-                            onPressed: _isGenerating ? null : _generatePassword,
+                          const SizedBox(height: 12),
+                          VaultTitle(
+                            title: 'Create Vault',
+                            subtitle: 'Set up your encrypted vault',
                           ),
-                          if (_generatedPassword != null) ...[
-                            const SizedBox(width: 5),
-                            _IconActionButton(
-                              icon: Icons.copy_rounded,
-                              tooltip: 'Copy password',
-                              color: const Color(0xFF22C55E),
-                              onPressed: _copyGeneratedPassword,
-                            ),
-                          ],
-                        ],
-                      ),
-                      // ── Strength meter ──
-                      if (_strength != null) ...[
-                        const SizedBox(height: 8),
-                        _StrengthMeter(
-                          strength: _strength!,
-                          color: _strengthColor(),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      // ── Confirm password ──
-                      VaultTextField(
-                        controller: _confirmController,
-                        label: 'Confirm Password',
-                        hint: '••••••••••••',
-                        prefixIcon: Icons.lock_outline_rounded,
-                        obscure: _obscureConfirm,
-                        onToggleObscure: () =>
-                            setState(() => _obscureConfirm = !_obscureConfirm),
-                      ),
-                      // ── Error ──
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: 8),
-                        VaultErrorBox(message: _errorMessage!),
-                      ],
-                      const SizedBox(height: 14),
-                      // ── Create Vault button ──
-                      SizedBox(
-                        width: double.infinity,
-                        child: VaultGradientButton(
-                          onPressed: _isLoading ? null : _handleRegister,
-                          colors: const [Color(0xFF1A5FA8), Color(0xFF2E75B6)],
-                          hoverColors: const [
-                            Color(0xFF2277CC),
-                            Color(0xFF58A6FF)
-                          ],
-                          pressColor: const Color(0xFF1A4D7A),
-                          height: 42,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white))
-                              : const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.shield_rounded,
-                                        size: 15, color: Colors.white),
-                                    SizedBox(width: 7),
-                                    Text('Create Vault',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 13,
-                                            letterSpacing: 0.4)),
-                                  ],
-                                ),
-                        ),
-                      ),
-                      const SizedBox(height: 7),
-                      // ── Sign in link ──
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('Already have a vault?',
-                              style: TextStyle(
-                                  color: Color(0xFF5A7A9A), fontSize: 11.5)),
-                          VaultTextLink(
-                            label: 'Sign In',
-                            onPressed: () async {
-                              await shrinkToLoginWindow();
-                              if (mounted) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const LoginScreen()),
-                                );
-                              }
-                            },
+                          const SizedBox(height: 14),
+                          // ── Username ──
+                          VaultTextField(
+                            controller: _usernameController,
+                            label: 'Username',
+                            hint: 'Choose a unique username',
+                            prefixIcon: Icons.person_outline_rounded,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      const VaultDivider(),
-                      const SizedBox(height: 8),
-                      // ── Exit ──
-                      SizedBox(
-                        width: double.infinity,
-                        child: VaultGradientButton(
-                          onPressed: () => exit(0),
-                          colors: [Colors.transparent, Colors.transparent],
-                          hoverColors: [
-                            const Color(0xFFEF4444).withOpacity(0.12),
-                            const Color(0xFF991B1B).withOpacity(0.18),
-                          ],
-                          pressColor: const Color(0xFFEF4444).withOpacity(0.25),
-                          height: 36,
-                          outlined: true,
-                          outlineColor:
-                              const Color(0xFFEF4444).withOpacity(0.45),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
+                          const SizedBox(height: 8),
+                          // ── Email ──
+                          VaultTextField(
+                            controller: _emailController,
+                            label: 'Email',
+                            hint: 'your@email.com',
+                            prefixIcon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          const SizedBox(height: 8),
+                          // ── Password row with generate / copy ──
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(Icons.power_settings_new_rounded,
-                                  size: 14, color: Color(0xFFEF4444)),
-                              SizedBox(width: 6),
-                              Text('Exit VaultX',
-                                  style: TextStyle(
-                                      color: Color(0xFFEF4444),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: 0.3)),
+                              Expanded(
+                                child: VaultTextField(
+                                  controller: _passwordController,
+                                  label: 'Master Password',
+                                  hint: 'Minimum 8 characters',
+                                  prefixIcon: Icons.lock_outline_rounded,
+                                  obscure: _obscurePassword,
+                                  onToggleObscure: () => setState(
+                                      () => _obscurePassword = !_obscurePassword),
+                                  onChanged: _onPasswordChanged,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              _IconActionButton(
+                                icon: _isGenerating
+                                    ? null
+                                    : Icons.auto_awesome_rounded,
+                                isLoading: _isGenerating,
+                                tooltip: 'Generate strong password',
+                                color: const Color(0xFF2E75B6),
+                                onPressed: _isGenerating ? null : _generatePassword,
+                              ),
+                              if (_generatedPassword != null) ...[
+                                const SizedBox(width: 5),
+                                _IconActionButton(
+                                  icon: Icons.copy_rounded,
+                                  tooltip: 'Copy password',
+                                  color: const Color(0xFF22C55E),
+                                  onPressed: _copyGeneratedPassword,
+                                ),
+                              ],
                             ],
                           ),
-                        ),
+                          // ── Strength meter ──
+                          if (_strength != null) ...[
+                            const SizedBox(height: 8),
+                            _StrengthMeter(
+                              strength: _strength!,
+                              color: _strengthColor(),
+                            ),
+                          ],
+                          const SizedBox(height: 8),
+                          // ── Confirm password ──
+                          VaultTextField(
+                            controller: _confirmController,
+                            label: 'Confirm Password',
+                            hint: '••••••••••••',
+                            prefixIcon: Icons.lock_outline_rounded,
+                            obscure: _obscureConfirm,
+                            onToggleObscure: () =>
+                                setState(() => _obscureConfirm = !_obscureConfirm),
+                          ),
+                          // ── Error ──
+                          if (_errorMessage != null) ...[
+                            const SizedBox(height: 8),
+                            VaultErrorBox(message: _errorMessage!),
+                          ],
+                          const SizedBox(height: 14),
+                          // ── Create Vault button ──
+                          SizedBox(
+                            width: double.infinity,
+                            child: VaultGradientButton(
+                              onPressed: _isLoading ? null : _handleRegister,
+                              colors: const [Color(0xFF1A5FA8), Color(0xFF2E75B6)],
+                              hoverColors: const [
+                                Color(0xFF2277CC),
+                                Color(0xFF58A6FF)
+                              ],
+                              pressColor: const Color(0xFF1A4D7A),
+                              height: 42,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white))
+                                  : const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.shield_rounded,
+                                            size: 15, color: Colors.white),
+                                        SizedBox(width: 7),
+                                        Text('Create Vault',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 13,
+                                                letterSpacing: 0.4)),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          // ── Sign in link ──
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('Already have a vault?',
+                                  style: TextStyle(
+                                      color: Color(0xFF5A7A9A), fontSize: 11.5)),
+                              VaultTextLink(
+                                label: 'Sign In',
+                                onPressed: () async {
+                                  await shrinkToLoginWindow();
+                                  if (mounted) {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => const LoginScreen()),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          const VaultDivider(),
+                          const SizedBox(height: 8),
+                          // ── Exit ──
+                          SizedBox(
+                            width: double.infinity,
+                            child: VaultGradientButton(
+                              onPressed: () => exit(0),
+                              colors: const [Colors.transparent, Colors.transparent],
+                              hoverColors: [
+                                const Color(0xFFEF4444).withValues(alpha: 0.12),
+                                const Color(0xFF991B1B).withValues(alpha: 0.18),
+                              ],
+                              pressColor: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                              height: 36,
+                              outlined: true,
+                              outlineColor:
+                                  const Color(0xFFEF4444).withValues(alpha: 0.45),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.power_settings_new_rounded,
+                                      size: 14, color: Color(0xFFEF4444)),
+                                  SizedBox(width: 6),
+                                  Text('Exit VaultX',
+                                      style: TextStyle(
+                                          color: Color(0xFFEF4444),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          letterSpacing: 0.3)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
           ),
         ],
       ),
@@ -465,11 +467,11 @@ class _IconActionButtonState extends State<_IconActionButton> {
             height: 42,
             decoration: BoxDecoration(
               color: _hovering
-                  ? widget.color.withOpacity(0.18)
+                  ? widget.color.withValues(alpha: 0.18)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: _hovering ? widget.color : widget.color.withOpacity(0.5),
+                color: _hovering ? widget.color : widget.color.withValues(alpha: 0.5),
                 width: 1.2,
               ),
             ),
@@ -501,9 +503,9 @@ class _StrengthMeter extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -515,7 +517,7 @@ class _StrengthMeter extends StatelessWidget {
                   borderRadius: BorderRadius.circular(3),
                   child: LinearProgressIndicator(
                     value: strength.score / 100,
-                    backgroundColor: Colors.white.withOpacity(0.08),
+                    backgroundColor: Colors.white.withValues(alpha: 0.08),
                     color: color,
                     minHeight: 4,
                   ),

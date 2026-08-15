@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 from typing import Optional, List
 from app.utils.hashing import hash_manager
@@ -33,6 +33,25 @@ class UserInfoResponse(BaseModel):
     has_passwords: bool
     has_documents: bool
     has_notes: bool
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+class SetPinRequest(BaseModel):
+    master_password: str
+    new_pin: str
+
+class LoginWithPinRequest(BaseModel):
+    email: str
+    pin: str
+
+class AccountInfoResponse(BaseModel):
+    user_id: int
+    username: str
+    email: str
+    created_at: str
+    has_pin: bool
 
 # ==================== ENDPOINTS ====================
 
@@ -173,3 +192,129 @@ def verify_pin(pin: str, email: str):
         return {"message": "PIN verified", "success": True}
     else:
         raise HTTPException(status_code=401, detail="Invalid PIN")
+
+
+@router.post("/login-pin", response_model=LoginResponse)
+def login_with_pin(request: LoginWithPinRequest):
+    """Log in using email + 4-digit PIN instead of master password.
+    Verifies the PIN hash and, if correct, issues a full JWT token
+    identical to the one returned by /login.
+    """
+    if len(request.pin) != 4 or not request.pin.isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be exactly 4 digits")
+
+    query = "SELECT user_id, username, pin_hash FROM Users WHERE email = ?"
+    result = db_manager.execute_query(query, (request.email,))
+
+    if not result:
+        raise HTTPException(status_code=401, detail="Invalid email or PIN")
+
+    user_id, username, pin_hash = result[0]
+
+    if not pin_hash:
+        raise HTTPException(status_code=404, detail="No PIN set for this account. Please log in with your master password.")
+
+    if not hash_manager.verify_pin(request.pin, pin_hash):
+        raise HTTPException(status_code=401, detail="Invalid PIN")
+
+    token = jwt_manager.create_token(user_id)
+    return LoginResponse(
+        message="Login successful",
+        user_id=user_id,
+        username=username,
+        token=token
+    )
+
+
+# ==================== SETTINGS ====================
+
+@router.get("/me", response_model=AccountInfoResponse)
+def get_my_account(user_id: int = Depends(jwt_manager.get_current_user)):
+    """Returns the currently logged-in user's own account info —
+    used by the Settings screen. Unlike GET /users, this is scoped to
+    the authenticated user only."""
+    query = "SELECT username, email, created_at, pin_hash FROM Users WHERE user_id = ?"
+    result = db_manager.execute_query(query, (user_id,))
+
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    username, email, created_at, pin_hash = result[0]
+    return AccountInfoResponse(
+        user_id=user_id,
+        username=username,
+        email=email,
+        created_at=str(created_at) if created_at else "",
+        has_pin=pin_hash is not None
+    )
+
+
+@router.post("/change-password")
+def change_password(
+    request: ChangePasswordRequest,
+    user_id: int = Depends(jwt_manager.get_current_user)
+):
+    """Changes the master password used to log in.
+
+    NOTE ON VAULT DATA: the actual encryption key used for stored
+    passwords/notes/documents is derived from user_id + a fixed app
+    secret (see get_master_key() in passwords.py/notes.py/documents.py/
+    backup.py) rather than from the master password itself. That means
+    changing the master password here is a pure authentication update —
+    it does NOT require re-encrypting any existing vault data, and none
+    of it becomes unreadable as a result of this change.
+    """
+    query = "SELECT master_password_hash, salt FROM Users WHERE user_id = ?"
+    result = db_manager.execute_query(query, (user_id,))
+
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    stored_hash, stored_salt = result[0]
+
+    if not hash_manager.verify_master_password(request.current_password, stored_hash, stored_salt):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+
+    if len(request.new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+
+    if request.new_password == request.current_password:
+        raise HTTPException(status_code=400, detail="New password must be different from the current password")
+
+    new_hash, new_salt_hex = hash_manager.hash_master_password(request.new_password)
+
+    update_query = "UPDATE Users SET master_password_hash = ?, salt = ? WHERE user_id = ?"
+    db_manager.execute_query(update_query, (new_hash, new_salt_hex, user_id))
+
+    return {"message": "Master password updated successfully", "success": True}
+
+
+@router.post("/pin")
+def set_or_change_pin(
+    request: SetPinRequest,
+    user_id: int = Depends(jwt_manager.get_current_user)
+):
+    """Sets a new PIN or changes an existing one. Requires the current
+    master password to confirm identity — this also sidesteps the
+    "forgot PIN" problem, since the PIN can always be reset via the
+    master password (which the user must already know to be logged in)."""
+    query = "SELECT master_password_hash, salt FROM Users WHERE user_id = ?"
+    result = db_manager.execute_query(query, (user_id,))
+
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    stored_hash, stored_salt = result[0]
+
+    if not hash_manager.verify_master_password(request.master_password, stored_hash, stored_salt):
+        raise HTTPException(status_code=401, detail="Master password is incorrect")
+
+    if len(request.new_pin) != 4 or not request.new_pin.isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be 4 digits")
+
+    new_pin_hash = hash_manager.hash_pin(request.new_pin)
+
+    update_query = "UPDATE Users SET pin_hash = ? WHERE user_id = ?"
+    db_manager.execute_query(update_query, (new_pin_hash, user_id))
+
+    return {"message": "PIN updated successfully", "success": True}

@@ -75,6 +75,34 @@ class ApiService {
     }
   }
 
+  Future<LoginResponse> loginWithPin(String email, String pin) async {
+    try {
+      final http.Response response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/login-pin'),
+            headers: <String, String>{'Content-Type': 'application/json'},
+            body: jsonEncode(<String, String>{'email': email, 'pin': pin}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.body.isEmpty) {
+        throw Exception(
+            'Server returned empty response. Make sure backend is running on port 8000');
+      }
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        await saveToken(data['token'] as String);
+        return LoginResponse.fromJson(data);
+      } else {
+        final Map<String, dynamic> error = jsonDecode(response.body);
+        throw Exception(error['detail'] ?? 'PIN login failed');
+      }
+    } catch (e) {
+      throw Exception('Connection failed: ${e.toString()}');
+    }
+  }
+
   Future<RegisterResponse> register(
       String masterPassword, String username, String email,
       {String? pin}) async {
@@ -111,6 +139,70 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Connection failed: ${e.toString()}');
+    }
+  }
+
+  // ==================== SETTINGS ====================
+
+  Future<Map<String, dynamic>> getAccountInfo() async {
+    try {
+      final http.Response response = await http
+          .get(Uri.parse('$baseUrl/auth/me'), headers: await _getHeaders())
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        final Map<String, dynamic> error = jsonDecode(response.body);
+        throw Exception(error['detail'] ?? 'Failed to load account info');
+      }
+    } catch (e) {
+      throw Exception('Connection failed: ${e.toString()}');
+    }
+  }
+
+  Future<void> changeMasterPassword(
+      String currentPassword, String newPassword) async {
+    try {
+      final http.Response response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/change-password'),
+            headers: await _getHeaders(),
+            body: jsonEncode(<String, String>{
+              'current_password': currentPassword,
+              'new_password': newPassword,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        final Map<String, dynamic> error = jsonDecode(response.body);
+        throw Exception(error['detail'] ?? 'Failed to change password');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  Future<void> setOrChangePin(String masterPassword, String newPin) async {
+    try {
+      final http.Response response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/pin'),
+            headers: await _getHeaders(),
+            body: jsonEncode(<String, String>{
+              'master_password': masterPassword,
+              'new_pin': newPin,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        final Map<String, dynamic> error = jsonDecode(response.body);
+        throw Exception(error['detail'] ?? 'Failed to update PIN');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
     }
   }
 

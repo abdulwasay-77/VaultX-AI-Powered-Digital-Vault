@@ -16,10 +16,12 @@ import 'document_screen.dart';
 import 'notes_screen.dart';
 import 'risk_dashboard_screen.dart';
 import 'backup_screen.dart';
+import 'profile_screen.dart';
 import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final bool isFirstTime;
+  const DashboardScreen({super.key, this.isFirstTime = false});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -34,7 +36,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   List<PasswordEntry> _passwords = [];
   List<Document> _documents = [];
   List<NoteListItem> _notes = [];
-  int? _highlightedPasswordId;
 
   String _username = '';
   bool _isFullScreen = false;
@@ -63,6 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   late NotesScreen _notesScreen;
   late RiskDashboardScreen _riskDashboardScreen;
   late BackupScreen _backupScreen;
+  late ProfileScreen _profileScreen;
 
   final List<Map<String, dynamic>> _tabHeadings = [
     {'icon': Icons.dashboard_rounded, 'title': 'Dashboard'},
@@ -71,6 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     {'icon': Icons.note_rounded, 'title': 'Notes'},
     {'icon': Icons.assessment_rounded, 'title': 'Risk Dashboard'},
     {'icon': Icons.backup_rounded, 'title': 'Backup'},
+    {'icon': Icons.person_rounded, 'title': 'Profile'},
   ];
 
   @override
@@ -116,6 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     _notesScreen = const NotesScreen();
     _riskDashboardScreen = const RiskDashboardScreen();
     _backupScreen = const BackupScreen();
+    _profileScreen = const ProfileScreen();
   }
 
   void _loadUserData() {
@@ -144,11 +148,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _passwords = passwords;
           // Rebuild the password sub-screen so it also sees the fresh list
           _passwordScreen =
-              PasswordScreen(
-                passwords: _passwords,
-                onRefresh: _loadPasswords,
-                highlightedPasswordId: _highlightedPasswordId,
-              );
+              PasswordScreen(passwords: _passwords, onRefresh: _loadPasswords);
         });
       }
     } catch (_) {}
@@ -231,22 +231,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
     setState(() {
       _selectedIndex = targetIndex;
-      switch (result.type) {
-        case 'password':
-          _highlightedPasswordId = result.id;
-          _passwordScreen = PasswordScreen(
-            passwords: _passwords,
-            onRefresh: _loadPasswords,
-            highlightedPasswordId: result.id,
-          );
-          break;
-        case 'document':
-          _documentScreen = DocumentScreen(highlightedDocumentId: result.id);
-          break;
-        case 'note':
-          _notesScreen = NotesScreen(initialNoteId: result.id);
-          break;
-      }
       _searchController.clear();
       _searchResponse = null;
     });
@@ -265,7 +249,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (_isFullScreen) {
       await windowManager.setFullScreen(false);
     }
-    // Return to the compact authentication window before showing LoginScreen.
     await shrinkToLoginWindow();
     if (!mounted) return;
     Provider.of<AuthProvider>(context, listen: false).logout();
@@ -514,7 +497,10 @@ class _DashboardScreenState extends State<DashboardScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Welcome banner
-          _WelcomeBanner(username: _username),
+          _WelcomeBanner(
+            username: _username,
+            isFirstTime: widget.isFirstTime,
+          ),
           const SizedBox(height: 28),
 
           // Quick stats row — all three counts now live
@@ -837,6 +823,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         return _riskDashboardScreen;
       case 5:
         return _backupScreen;
+      case 6:
+        return _profileScreen;
       default:
         return const SizedBox.shrink();
     }
@@ -846,7 +834,11 @@ class _DashboardScreenState extends State<DashboardScreen>
 // ─── Welcome Banner ──────────────────────────────────────────────────────────
 class _WelcomeBanner extends StatelessWidget {
   final String username;
-  const _WelcomeBanner({required this.username});
+  final bool isFirstTime;
+  const _WelcomeBanner({
+    required this.username,
+    this.isFirstTime = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -915,7 +907,7 @@ class _WelcomeBanner extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ).createShader(bounds),
                   child: Text(
-                    'Welcome back, $username!',
+                    isFirstTime ? 'Welcome, $username!' : 'Welcome back, $username!',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -925,9 +917,11 @@ class _WelcomeBanner extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 5),
-                const Text(
-                  'Your encrypted vault is secured and ready.',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF5A7A9A)),
+                Text(
+                  isFirstTime
+                      ? 'Your new encrypted vault has been created and is ready.'
+                      : 'Your encrypted vault is secured and ready.',
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF5A7A9A)),
                 ),
               ],
             ),
