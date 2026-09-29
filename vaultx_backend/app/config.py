@@ -11,7 +11,10 @@ def _writable_base_dir():
     - Compiled .exe (PyInstaller): the folder the .exe itself sits in,
       NOT the temp extraction folder, so data survives between runs."""
     if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
+        # Installed app lives in C:\\Program Files, which is READ-ONLY for normal
+        # users. Store data in the per-user AppData folder instead.
+        root = os.getenv('LOCALAPPDATA') or os.path.expanduser('~')
+        return os.path.join(root, 'VaultX')
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 

@@ -52,8 +52,6 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilen
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName} now"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
-; Clean up backend's created data/uploads/backups folders on uninstall (optional —
-; remove this section if you'd rather keep user data after uninstall)
-Type: filesandordirs; Name: "{app}\backend\data"
-Type: filesandordirs; Name: "{app}\backend\uploads"
-Type: filesandordirs; Name: "{app}\backend\backups"
+; User data now lives in %LOCALAPPDATA%\VaultX (not in Program Files).
+; Left in place on uninstall so the vault isn't lost. To wipe it too, uncomment:
+; Type: filesandordirs; Name: "{localappdata}\VaultX"
